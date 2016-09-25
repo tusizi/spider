@@ -10,67 +10,92 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class JRTTCrawler {
-    public static List<String> ids = new ArrayList<String>();
+    public static Set<String> ids = new HashSet<String>();
+    public static Set<String> channels = new HashSet<String>();
+    ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(10, 20, 5, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>(100), new ThreadPoolExecutor.CallerRunsPolicy());
+
 
     public static void main(String[] args) {
-        Parser.parse("http://www.toutiao.com/a6333126455618715906/", true);
+        new JRTTCrawler().start();
     }
-}
 
-class Parser {
-    public static void parse(String url, boolean isArticle) {
-        Document doc;
-        try {
-            doc = Jsoup.connect(url)
-                    .userAgent("Mozilla/5.0 (Windows NT 6.1; rv:22.0) Gecko/20100101 Firefox/22.0")
-                    .ignoreContentType(true)
-                    .timeout(30000)
-                    .get();
-        } catch (Exception e) {
-            return;
+    public void start() {
+        threadPoolExecutor.submit(new Parser("http://www.toutiao.com/a6333126455618715906/", true));
+    }
+
+    class Parser implements Runnable {
+        private String url;
+        private boolean isArticle;
+
+        public Parser(String url, boolean isArticle) {
+            this.url = url;
+            this.isArticle = isArticle;
         }
 
-        if (isArticle) {
-            try {
-                String content;
-                String title;
-                String time;
-                content = doc.getElementsByClass("article-content").text();
-                title = doc.getElementsByClass("article-title").get(0).text();
-                time = doc.getElementsByClass("articleInfo").get(0).getElementsByClass("time").text();
-                String regex = "[http://toutiao.com/group/]([0-9]+)";
-                Pattern pattern = Pattern.compile(regex);
-                Matcher matcher = pattern.matcher(url);
-                Article article = new Article(title, time, content, url);
-                while (matcher.find()) {
-                    String group = matcher.group(1);
-                    article.setId(group);
-                }
+        public String extractId(String url) {
+            String regex = "[http://toutiao.com/group/]([0-9]+)";
+            Pattern pattern = Pattern.compile(regex);
+            Matcher matcher = pattern.matcher(url);
+            while (matcher.find()) {
+                return matcher.group(1);
+            }
+            return null;
+        }
 
-                if (JRTTCrawler.ids.contains(article.getId())) {
-                    return;
-                }
-                JRTTCrawler.ids.add(article.getId());
-                Persister.persist(article);
+        public void run() {
+            Document doc;
+            try {
+                doc = Jsoup.connect(url)
+                        .userAgent("Mozilla/5.0 (Windows NT 6.1; rv:22.0) Gecko/20100101 Firefox/22.0").ignoreContentType(true).timeout(30000).get();
             } catch (Exception e) {
                 return;
             }
-        }
 
-        Elements links = doc.getElementsByTag("a");
-        for (Element link : links) {
-            String linkHref = link.attr("href");
-            if (linkHref.contains("http://toutiao.com/group")) {
-                parse(linkHref, true);
-            } else if (linkHref.contains("http://toutiao.com/m")) {
-                parse(linkHref, false);
+            if (isArticle) {
+                try {
+                    String title = doc.getElementsByClass("article-title").get(0).text();
+                    String time = doc.getElementsByClass("articleInfo").get(0).getElementsByClass("time").text();
+                    String content = doc.getElementsByClass("article-content").text();
+                    String id = extractId(url);
+                    if (JRTTCrawler.ids.contains(id)) {
+                        return;
+                    }
+                    Article article = new Article(title, time, content, url, id);
+
+                    Persistence.persist(article);
+                    JRTTCrawler.ids.add(article.getId());
+                    System.out.println("current article count = " + ids.size());
+                } catch (Exception e) {
+                    return;
+                }
+            }
+
+            Elements links = doc.getElementsByTag("a");
+            for (Element link : links) {
+                String linkHref = link.attr("href");
+                if (linkHref.contains("http://toutiao.com/group")) {
+                    String id = extractId(linkHref);
+                    if (JRTTCrawler.ids.contains(id)) {
+                        continue;
+                    }
+                    threadPoolExecutor.submit(new Parser(linkHref, true));
+                } else if (linkHref.contains("http://toutiao.com/m")) {
+                    if (channels.contains(linkHref)) {
+                        continue;
+                    }
+                    channels.add(linkHref);
+                    threadPoolExecutor.submit(new Parser(linkHref, false));
+                }
             }
         }
     }
@@ -117,11 +142,12 @@ class Article {
         this.id = id;
     }
 
-    public Article(String title, String date, String content, String url) {
+    public Article(String title, String date, String content, String url, String id) {
         this.title = title;
         this.date = date;
         this.content = content;
         this.url = url;
+        this.id = id;
     }
 
     private String title;
@@ -131,7 +157,7 @@ class Article {
     private String id;
 }
 
-class Persister {
+class Persistence {
     public static void persist(Article article) {
         String date = article.getDate();
         try {
