@@ -170,6 +170,7 @@ class Persistence {
             if (!file.exists()) {
                 file.createNewFile();
             }
+
             FileWriter fileWritter = new FileWriter(file, true);
             BufferedWriter bufferWritter = new BufferedWriter(fileWritter);
             String str = new Gson().toJson(article);
