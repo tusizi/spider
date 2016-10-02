@@ -10,6 +10,7 @@ data.zip
 .mtj.tmp/
 
 # Package Files #
+/spider.iml
 *.jar
 *.war
 *.ear
