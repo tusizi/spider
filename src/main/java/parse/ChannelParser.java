@@ -1,9 +1,9 @@
 package parse;
 
-import cache.Cache;
 import constant.Constant;
 import entity.Channel;
 import entity.ChannelItem;
+import persist.PersistenceFactory;
 import thread.ThreadPool;
 import utils.Extractor;
 import utils.HttpUtils;
@@ -35,16 +35,16 @@ public class ChannelParser implements Runnable {
             for (ChannelItem item : data) {
                 if (!item.is_feed_ad()) {
                     String url = Constant.DOMAIN + item.getSource_url();
-                    if (Cache.ids.contains(Extractor.extractId(url))) {
+                    if (PersistenceFactory.getInstance().isArticleExist(Extractor.extractId(url))) {
                         continue;
                     }
                     ThreadPool.threadPoolExecutor.submit(new ArticleParser(url, true));
                 }
                 if (item.getMedia_url() != null && item.getMedia_url().contains(Constant.GROUP_PREFIX)) {
-                    if (Cache.channels.contains(item.getMedia_url())) {
+                    if (PersistenceFactory.getInstance().isChannelExist(item.getMedia_url())) {
                         continue;
                     }
-                    Cache.channels.add(item.getMedia_url());
+                    PersistenceFactory.getInstance().saveChannel(item.getMedia_url());
                     ThreadPool.threadPoolExecutor.submit(new ArticleParser(item.getMedia_url(), false));
                 }
             }

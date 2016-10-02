@@ -1,7 +1,6 @@
 package parse;
 
 import agent.UserAgent;
-import cache.Cache;
 import constant.Constant;
 import entity.Article;
 import org.jsoup.HttpStatusException;
@@ -9,7 +8,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import persist.Persistence;
+import persist.PersistenceFactory;
 import thread.ThreadPool;
 import utils.Extractor;
 
@@ -45,7 +44,7 @@ public class ArticleParser implements Runnable {
                     String time = doc.getElementsByClass(Constant.TIME_CLASS).get(0).getElementsByClass("time").text();
                     String content = doc.getElementsByClass(Constant.CONTENT_CLASS).text();
                     String id = Extractor.extractId(url);
-                    if (Cache.ids.contains(id)) {
+                    if (PersistenceFactory.getInstance().isArticleExist(id)) {
                         return;
                     }
 
@@ -57,14 +56,8 @@ public class ArticleParser implements Runnable {
 
                     Article article = new Article(title, time, content, url, id, tags);
 
-//                    Persistence.persist(article);
-                    ThreadPool.fileWriteExecutor.submit(new Persistence(article));
-                    Cache.ids.add(article.getId());
-                    if (Cache.ids.size() % 100 == 0) {
-                        System.out.println("current article count = " + Cache.ids.size());
-                    } else {
-                        System.out.print(".");
-                    }
+                    PersistenceFactory.getInstance().saveArticle(article);
+                    System.out.print(".");
                 } catch (Exception e) {
                     e.printStackTrace();
                     return;
@@ -76,15 +69,15 @@ public class ArticleParser implements Runnable {
                 String linkHref = link.attr("href");
                 if (linkHref.contains(Constant.ARTICLE_PREFIX)) {
                     String id = Extractor.extractId(linkHref);
-                    if (Cache.ids.contains(id)) {
+                    if (PersistenceFactory.getInstance().isArticleExist(id)) {
                         continue;
                     }
                     ThreadPool.threadPoolExecutor.submit(new ArticleParser(linkHref, true));
                 } else if (linkHref.contains(Constant.GROUP_PREFIX)) {
-                    if (Cache.channels.contains(linkHref)) {
+                    if (PersistenceFactory.getInstance().isChannelExist(linkHref)) {
                         continue;
                     }
-                    Cache.channels.add(linkHref);
+                    PersistenceFactory.getInstance().saveChannel(linkHref);
                     ThreadPool.threadPoolExecutor.submit(new ArticleParser(linkHref, false));
                 }
             }
@@ -104,4 +97,5 @@ public class ArticleParser implements Runnable {
             return;
         }
     }
+
 }

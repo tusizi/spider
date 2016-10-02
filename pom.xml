@@ -23,6 +23,17 @@
             <artifactId>httpclient</artifactId>
             <version>4.3.6</version>
         </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.39</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava-jdk5</artifactId>
+            <version>13.0</version>
+        </dependency>
     </dependencies>
 
 </project>

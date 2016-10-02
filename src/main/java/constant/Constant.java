@@ -6,7 +6,6 @@ import java.util.List;
 public interface Constant {
     String DOMAIN = "www.domain.com";
     String ARTICLE_REGEX = "[" + DOMAIN + "/group/]([0-9]+)";
-    String USER_AGENT = "Mozilla/5.0 (Windows NT 6.1; rv:22.0) Gecko/20100101 Firefox/22.0";
     String ARTICLE_PREFIX = DOMAIN + "/group";
     String GROUP_PREFIX = DOMAIN + "/m";
     String ARTICLE_CLASS = "article-title";

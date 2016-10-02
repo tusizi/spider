@@ -25,9 +25,12 @@ public class UserAgent {
                     .timeout(60000)
                     .get();
             Elements links = document.getElementsByTag("a");
+            int i = 0;
             for (Element element : links) {
+                if (i == 2) break;
                 try {
                     if (element.attr("title") != null && element.attr("title").startsWith("Http User-agent")) {
+                        i++;
                         String href = element.attr("href");
                         Document agent = Jsoup.connect(href)
                                 .userAgent("Mozilla/5.0 (Windows NT 6.1; WOW64; rv:2.0.1) Gecko/20100101 Firefox/4.0.1")
