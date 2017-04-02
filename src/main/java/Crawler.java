@@ -1,5 +1,4 @@
-import constant.Constant;
-import parse.ChannelParser;
+import parse.SearchParser;
 
 public class Crawler {
 
@@ -8,11 +7,13 @@ public class Crawler {
     }
 
     public void start() {
-        for (String name : Constant.CHANNELS) {
-            System.out.println("start get channel : " + name);
-            new ChannelParser(name).run();
-//            ThreadPool.threadPoolExecutor.submit(new ChannelParser(name));
-        }
+//        for (String name : Constant.CHANNELS) {
+//            System.out.println("start getChannel channel : " + name);
+//            new ChannelParser(name).run();
+////            ThreadPool.threadPoolExecutor.submit(new ChannelParser(name));
+//        }
+
+        new SearchParser("房价", 0, 30).run();
     }
 }
 

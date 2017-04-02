@@ -8,6 +8,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import persist.Persistence;
 import persist.PersistenceFactory;
 import thread.ThreadPool;
 import utils.Extractor;
@@ -20,6 +21,11 @@ import java.util.List;
 public class ArticleParser implements Runnable {
     private String url;
     private boolean isArticle;
+    private Persistence persistence;
+
+    public void setPersistence(Persistence persistence) {
+        this.persistence = persistence;
+    }
 
     public ArticleParser(String url, boolean isArticle) {
         this.url = url;
@@ -30,7 +36,7 @@ public class ArticleParser implements Runnable {
         Document doc;
         try {
             String randomUserAgent = UserAgent.getRandomUserAgent();
-//            System.out.println("get by " + randomUserAgent);
+//            System.out.println("getChannel by " + randomUserAgent);
             doc = Jsoup.connect(url).userAgent(randomUserAgent).ignoreContentType(true).timeout(30000).get();
 
 
@@ -56,7 +62,11 @@ public class ArticleParser implements Runnable {
 
                     Article article = new Article(title, time, content, url, id, tags);
 
-                    PersistenceFactory.getInstance().saveArticle(article);
+                    if (this.persistence != null) {
+                        persistence.saveArticle(article);
+                    } else {
+                        PersistenceFactory.getInstance().saveArticle(article);
+                    }
                     System.out.print(".");
                 } catch (Exception e) {
                     e.printStackTrace();
