@@ -5,8 +5,8 @@ public class PersistenceFactory {
 
     public static Persistence getInstance() {
         if (persistence == null) {
-//            persistence = new FilePersistence();
-            persistence = new DBPersistence();
+            persistence = new FilePersistence();
+//            persistence = new DBPersistence();
         }
         return persistence;
     }

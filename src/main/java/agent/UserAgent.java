@@ -13,9 +13,9 @@ import java.util.Random;
 public class UserAgent {
     private static List<String> userAgents = new ArrayList<String>();
 
-    static {
-        getUserAgent();
-    }
+//    static {
+//        getUserAgent();
+//    }
 
     private static void getUserAgent() {
         try {
@@ -58,10 +58,11 @@ public class UserAgent {
     }
 
     public static String getRandomUserAgent() {
-        try {
-            return userAgents.get(new Random().nextInt(userAgents.size()));
-        } catch (Exception e) {
-            return userAgents.get(0);
-        }
+//        try {
+//            return userAgents.get(new Random().nextInt(userAgents.size()));
+//        } catch (Exception e) {
+//            return userAgents.get(0);
+//        }
+        return "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36";
     }
 }
