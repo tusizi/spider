@@ -35,8 +35,8 @@ public class FilePersistence implements Persistence {
 
             String dir = System.getProperty("user.dir") + File.separator + "data";
             makeDirs(dir);
-            makeDirs(dir + File.separator + simpleDate);
-            File file = new File(dir + File.separator + simpleDate + File.separator + article.getId());
+//            makeDirs(dir + File.separator + simpleDate);
+            File file = new File(dir + File.separator + simpleDate);
             FilePersistence.ids.add(article.getId());
             if (!file.exists()) {
                 boolean contains = fileCounts.contains(article.getId());
@@ -48,11 +48,11 @@ public class FilePersistence implements Persistence {
                 file.createNewFile();
             }
 
-            FileWriter fileWritter = new FileWriter(file, false);
+            FileWriter fileWritter = new FileWriter(file, true);
             BufferedWriter bufferWritter = new BufferedWriter(fileWritter);
             String str = new Gson().toJson(article);
-            bufferWritter.write(str);
-            bufferWritter.write("\n");
+            bufferWritter.append(str);
+            bufferWritter.append("\n");
             bufferWritter.close();
         } catch (ParseException e) {
             e.printStackTrace();
