@@ -46,7 +46,7 @@ public class SearchParser implements Runnable {
                     ThreadPool.threadPoolExecutor.submit(task);
                 }
             }
-            if (search.getHash_more() != null && search.getHash_more() == 1) {
+            if (search.getHas_more() != null && search.getHas_more() == 1) {
                 try {
                     Thread.sleep(1000L);
                     ThreadPool.threadPoolExecutor.submit(new SearchParser(name, search.getOffset(), count));

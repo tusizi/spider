@@ -3,12 +3,12 @@ package entity;
 import java.util.List;
 
 public class Search {
-    public Integer getHash_more() {
-        return hash_more;
+    public Integer getHas_more() {
+        return has_more;
     }
 
-    public void setHash_more(Integer hash_more) {
-        this.hash_more = hash_more;
+    public void setHas_more(Integer has_more) {
+        this.has_more = has_more;
     }
 
     public Integer getOffset() {
@@ -27,7 +27,7 @@ public class Search {
         this.data = data;
     }
 
-    private Integer hash_more;
+    private Integer has_more;
     private Integer offset;
     private List<SearchItem> data;
 
